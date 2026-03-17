@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Which Baseball Team Should You Root For?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f0e8;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b6b6b;
+      --hint: #999;
+      --border: rgba(0,0,0,0.11);
+      --border-hover: rgba(0,0,0,0.28);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 3rem 1.25rem 5rem;
+    }
+    .container { width: 100%; max-width: 560px; }
+
+    header { text-align: center; margin-bottom: 2.5rem; }
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #c8402a;
+      font-weight: 500;
+      margin-bottom: 0.6rem;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--text);
+    }
+    header p {
+      margin-top: 0.75rem;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 2rem 2rem 1.75rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+
+    .progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1.75rem; }
+    .progress-track { flex: 1; height: 3px; background: #e5e0d8; border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #c8402a; border-radius: 2px; transition: width 0.4s ease; }
+    .progress-label { font-size: 12px; color: var(--hint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    .question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(17px, 3.5vw, 21px);
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 1.4rem;
+      color: var(--text);
+    }
+
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.75rem; }
+    @media (max-width: 420px) { .options { grid-template-columns: 1fr; } }
+
+    .opt {
+      background: #fafaf8;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 15px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.45;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    }
+    .opt:hover { border-color: var(--border-hover); background: #f0ece4; }
+    .opt:active { transform: scale(0.98); }
+    .opt.selected { border-color: var(--text); background: #f0ece4; border-width: 2px; }
+
+    .nav-row { display: flex; justify-content: space-between; align-items: center; }
+    .nav-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 22px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .nav-btn:hover { background: #f0ece4; border-color: var(--border-hover); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+    .nav-btn.primary { background: var(--text); color: #fff; border-color: var(--text); }
+    .nav-btn.primary:hover { background: #333; }
+    .q-count { font-size: 12px; color: var(--hint); }
+
+    .result-section { text-align: center; }
+    .result-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--hint);
+      margin-bottom: 1.25rem;
+    }
+    .team-card {
+      border-radius: 18px;
+      overflow: hidden;
+      max-width: 300px;
+      margin: 0 auto 1.5rem;
+    }
+    .team-card-inner { padding: 2.5rem 2rem 2.25rem; text-align: center; }
+    .team-logo-wrap {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .team-logo { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
+    .team-logo-fallback {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 38px;
+      font-weight: 900;
+    }
+    .team-city { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.72; margin-bottom: 0.25rem; }
+    .team-name { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900; line-height: 1; margin-bottom: 1.1rem; }
+    .team-divider { width: 36px; height: 1.5px; background: currentColor; opacity: 0.3; margin: 0 auto 1rem; border-radius: 1px; }
+    .team-desc { font-size: 13px; line-height: 1.65; opacity: 0.87; }
+
+    .retake-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      margin-top: 0.25rem;
+    }
+
+    footer { text-align: center; margin-top: 2rem; font-size: 12px; color: var(--hint); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">⚾ Fan Finder</div>
+    <h1>Which Baseball Team Should You Root For?</h1>
+    <p>Ten questions about you. One team waiting at the end.</p>
+  </header>
+  <div class="card" id="quiz-card"></div>
+  <footer>Share your result!</footer>
+</div>
+
+<script>
+const Qs = [
+  { q: "Your ideal way to spend a Saturday:", opts: ["Lazy morning, no plans", "Out exploring somewhere new", "Hosting friends at home", "Productive — getting things done"] },
+  { q: "Pick a drink order:", opts: ["Black coffee", "Craft beer or cider", "A glass of wine", "Sparkling water with lemon"] },
+  { q: "The weather you feel most alive in:", opts: ["Warm and sunny", "Cool and grey", "Crisp and breezy", "Stormy and dramatic"] },
+  { q: "Your dream trip looks like:", opts: ["Beach with no agenda", "Mountains and hiking trails", "A buzzing city", "A quiet countryside town"] },
+  { q: "How do you feel about rules?", opts: ["Rules exist for good reason", "Some rules are worth bending", "Question everything", "Depends on the situation"] },
+  { q: "Pick something to eat right now:", opts: ["Street tacos by the water", "A loaded burger or hot dog", "Sourdough and local cheese", "Comfort food from home"] },
+  { q: "People who know you would say you're:", opts: ["Chill and go-with-the-flow", "Fired up and passionate", "Scrappy and resourceful", "Calm and calculating"] },
+  { q: "When something you care about isn't going well, you:", opts: ["Stay patient — things turn around", "Get loud and fight for it", "Find a clever workaround", "Break down what went wrong"] },
+  { q: "A view you'd never get tired of:", opts: ["Ocean at golden hour", "Rolling hills and open sky", "A glittering city skyline", "Dense forest with mist"] },
+  { q: "What you value most:", opts: ["Loyalty and sticking together", "Ambition and winning", "Community and belonging", "Intelligence and strategy"] }
+];
+
+const teams = [
+  { name: "Blue Jays", city: "Toronto",      bg: "#134A8E", text: "#ffffff",
+    logo: "https://upload.wikimedia.org/wikipedia/en/c/c9/Toronto_Blue_Jays_Logo.svg",
+    desc: "You've got big energy and an open mind. You back people before they're famous and you love a team that earns it the right way." },
+  { name: "Giants",    city: "San Francisco", bg: "#FD5A1E", text: "#ffffff",
+    logo: "https://upload.wikimedia.org/wikipedia/en/a/a5/San_Francisco_Giants_logo.svg",
+    desc: "You do things your own way — stylish, a little dramatic, and you've always got a story worth telling." },
+  { name: "Padres",    city: "San Diego",     bg: "#2F241D", text: "#FFC425",
+    logo: "https://upload.wikimedia.org/wikipedia/en/7/7e/San_Diego_Padres_logo.svg",
+    desc: "Relaxed but quietly confident. You love good vibes, a warm evening, and a team that's finally having its moment." },
+  { name: "Red Sox",   city: "Boston",        bg: "#BD3039", text: "#ffffff",
+    logo: "https://upload.wikimedia.org/wikipedia/en/6/6d/RedSoxPrimary_HangingSocks.svg",
+    desc: "Passionate, a little intense, and you never forget the feeling of a hard-won victory. Your loyalty runs deep." },
+  { name: "Mariners",  city: "Seattle",       bg: "#0C2C56", text: "#C4CED4",
+    logo: "https://upload.wikimedia.org/wikipedia/en/6/6d/Seattle_Mariners_logo_%28low_res%29.svg",
+    desc: "Thoughtful, loyal, and you appreciate beauty in the struggle. You're drawn to underdogs who believe in themselves." },
+  { name: "Angels",    city: "Los Angeles",   bg: "#BA0021", text: "#ffffff",
+    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8b/Los_Angeles_Angels_of_Anaheim_logo.svg/500px-Los_Angeles_Angels_of_Anaheim_logo.svg.png",
+    desc: "Warm, optimistic, and you see the best in everything. You love the sunshine and you believe the best is always yet to come." },
+  { name: "Yankees",   city: "New York",      bg: "#132448", text: "#ffffff",
+    logo: "https://upload.wikimedia.org/wikipedia/en/2/25/NewYorkYankees_caplogo.svg",
+    desc: "You set high expectations and you're not apologetic about it. Legacy matters to you, and you play to win." },
+  { name: "Mets",      city: "New York",      bg: "#002D72", text: "#FF5910",
+    logo: "https://upload.wikimedia.org/wikipedia/en/7/7b/New_York_Mets.svg",
+    desc: "Passionate, unpredictable, and fiercely yourself. You love a comeback story and you'd never root for the obvious choice." },
+  { name: "Braves",    city: "Atlanta",       bg: "#CE1141", text: "#ffffff",
+    logo: "https://upload.wikimedia.org/wikipedia/en/f/f2/Atlanta_Braves.svg",
+    desc: "Driven and grounded. You show up when it matters and you know that grit is what separates the good from the great." },
+  { name: "Astros",    city: "Houston",       bg: "#002D62", text: "#F4911E",
+    logo: "https://upload.wikimedia.org/wikipedia/en/6/6f/Houston-Astros-Logo.svg",
+    desc: "Methodical and sharp. You think before you act, and when you make your move it's usually the right one." }
+];
+
+function score(a) {
+  const w = new Array(teams.length).fill(0);
+  const add = (ii, p) => ii.forEach(i => w[i] += p);
+  // 0=bluejays 1=giants 2=padres 3=redsox 4=mariners 5=angels 6=yankees 7=mets 8=braves 9=astros
+  if(a[0]===0) add([2,4,5],3);    if(a[0]===1) add([0,1,2,5],2);  if(a[0]===2) add([3,6,7,8],2); if(a[0]===3) add([6,9,8],3);
+  if(a[1]===0) add([4,0,7],2);    if(a[1]===1) add([3,8,7,2],2);  if(a[1]===2) add([1,2,5],3);   if(a[1]===3) add([6,9,0],2);
+  if(a[2]===0) add([2,5,8],3);    if(a[2]===1) add([4,0,1],3);    if(a[2]===2) add([0,3,6],2);   if(a[2]===3) add([7,3,8],2);
+  if(a[3]===0) add([2,5,1],3);    if(a[3]===1) add([4,0,1],2);    if(a[3]===2) add([6,7,3],3);   if(a[3]===3) add([3,8,4],2);
+  if(a[4]===0) add([6,3,9],3);    if(a[4]===1) add([1,7,2],2);    if(a[4]===2) add([7,4,0],3);   if(a[4]===3) add([0,5,9],2);
+  if(a[5]===0) add([2,1,4],3);    if(a[5]===1) add([6,7,3,8],2);  if(a[5]===2) add([1,5,2],2);   if(a[5]===3) add([3,4,0],3);
+  if(a[6]===0) add([2,4,5],3);    if(a[6]===1) add([3,7,8],3);    if(a[6]===2) add([7,4,0],3);   if(a[6]===3) add([9,6,1],3);
+  if(a[7]===0) add([4,0,5],3);    if(a[7]===1) add([3,7,8],3);    if(a[7]===2) add([1,7,0],2);   if(a[7]===3) add([9,6,8],3);
+  if(a[8]===0) add([2,5,1],3);    if(a[8]===1) add([4,0,8],2);    if(a[8]===2) add([6,7,3],3);   if(a[8]===3) add([4,1,0],2);
+  if(a[9]===0) add([0,4,3,8],3);  if(a[9]===1) add([6,9,8],3);    if(a[9]===2) add([7,3,5],3);   if(a[9]===3) add([9,6,1],3);
+  return w.indexOf(Math.max(...w));
+}
+
+let cur = 0, ans = new Array(Qs.length).fill(null);
+
+function render() {
+  const card = document.getElementById('quiz-card');
+  if (cur === Qs.length) {
+    const t = teams[score(ans)];
+    card.innerHTML = `
+      <div style="text-align:center;">
+        <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#999;margin-bottom:1.25rem;">Your result</p>
+        <div style="border-radius:18px;overflow:hidden;max-width:300px;margin:0 auto 1.5rem;">
+          <div style="background:${t.bg};color:${t.text};padding:2.5rem 2rem 2.25rem;text-align:center;">
+            <div style="width:100px;height:100px;margin:0 auto 1.25rem;">
+              <img id="tlogo" src="${t.logo}" alt="${t.name}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));" onerror="document.getElementById('tlogo').style.display='none';document.getElementById('tlogo-fb').style.display='flex';"/>
+              <div id="tlogo-fb" style="display:none;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.18);align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:38px;font-weight:900;margin-top:-100px;">${t.name[0]}</div>
+            </div>
+            <div style="font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;opacity:.72;margin-bottom:.25rem;">${t.city}</div>
+            <div style="font-family:'Playfair Display',serif;font-size:38px;font-weight:900;line-height:1;margin-bottom:1.1rem;">${t.name}</div>
+            <div style="width:36px;height:1.5px;background:currentColor;opacity:.3;margin:0 auto 1rem;border-radius:1px;"></div>
+            <div style="font-size:13px;line-height:1.65;opacity:.87;">${t.desc}</div>
+          </div>
+        </div>
+        <button onclick="restart()" style="font-family:'DM Sans',sans-serif;font-size:13px;color:#999;background:transparent;border:none;cursor:pointer;padding:8px 12px;text-decoration:underline;text-underline-offset:3px;">Take it again</button>
+      </div>`;
+    return;
+  }
+  const q = Qs[cur];
+  const pct = (cur / Qs.length) * 100;
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.75rem;">
+      <div style="flex:1;height:3px;background:#e5e0d8;border-radius:2px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:#c8402a;border-radius:2px;transition:width .4s ease;"></div>
+      </div>
+      <span style="font-size:12px;color:#999;white-space:nowrap;">${cur + 1} / ${Qs.length}</span>
+    </div>
+    <div style="font-family:'Playfair Display',serif;font-size:clamp(17px,3.5vw,21px);font-weight:700;line-height:1.35;margin-bottom:1.4rem;">${q.q}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.75rem;">
+      ${q.opts.map((o, i) => `<button onclick="pick(${i})" style="background:${ans[cur]===i?'#f0ece4':'#fafaf8'};border:${ans[cur]===i?'2px solid #1a1a1a':'1.5px solid rgba(0,0,0,.11)'};border-radius:10px;padding:13px 15px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;text-align:left;line-height:1.45;transition:all .15s;">${o}</button>`).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <button onclick="prev()" ${cur===0?'disabled':''} style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:10px 22px;border-radius:8px;cursor:pointer;border:1.5px solid rgba(0,0,0,.11);background:transparent;color:#1a1a1a;opacity:${cur===0?'0.3':'1'};">← Back</button>
+      <span style="font-size:12px;color:#999;">${ans.filter(x=>x!==null).length} answered</span>
+      ${cur < Qs.length - 1
+        ? `<button onclick="next()" ${ans[cur]===null?'disabled':''} style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:10px 22px;border-radius:8px;cursor:pointer;border:1.5px solid rgba(0,0,0,.11);background:transparent;color:#1a1a1a;opacity:${ans[cur]===null?'0.3':'1'};">Next →</button>`
+        : `<button onclick="finish()" ${ans[cur]===null?'disabled':''} style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:10px 22px;border-radius:8px;cursor:pointer;border:none;background:#1a1a1a;color:#fff;opacity:${ans[cur]===null?'0.3':'1'};">See my result →</button>`
+      }
+    </div>`;
+}
+
+function pick(i) { ans[cur] = i; render(); }
+function next() { if (ans[cur] !== null && cur < Qs.length - 1) { cur++; render(); } }
+function prev() { if (cur > 0) { cur--; render(); } }
+function finish() { if (ans[cur] !== null) { cur = Qs.length; render(); } }
+function restart() { cur = 0; ans = new Array(Qs.length).fill(null); render(); }
+
+render();
+</script>
+</body>
+</html>
